@@ -1,0 +1,70 @@
+body {
+  background-image: url("flight.jpg"); /* Source: iStockPhoto */
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.main-container {
+  background-color: #000;
+  opacity: 0.9;
+  color: #fff;
+  padding: 40px;
+  margin: auto;
+  margin-top: 200px;
+  align-self: center;
+  width: 1500px;
+  height: auto;
+}
+
+.top-20 {
+  margin-top: 20px;
+}
+
+h5 {
+  color: #999999;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+h2 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+section {
+  margin-bottom: 50px;
+}
+
+.field {
+  font-weight: bold;
+  text-align: right;
+}
+
+.field-value {
+  color: #0e7fa8;
+}
+
+label.form {
+  font-size: 14px;
+  margin-right: 20px;
+}
+input {
+  margin-right: 30px;
+}
+#flights-information {
+  width: 100%;
+  text-align: center;
+  background-color: rgba(146, 146, 146, 0.088);
+}
+
+.row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-color: #fff;
+  border-width: 0.1px;
+  border-style: solid;
+}
+
+.success {
+  color: greenyellow;
+}
