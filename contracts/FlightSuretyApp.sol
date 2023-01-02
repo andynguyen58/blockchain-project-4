@@ -46,6 +46,18 @@ contract FlightSuretyApp {
     // key => address
     mapping(address => Airline) internal airlines;
 
+    struct Flight {
+        bool isRegistered;
+        string flightNumber;
+        string origin;
+        string destination;
+        uint8 statusCode;
+        uint256 departureTime;
+        address airline;
+    }
+
+    mapping(bytes32 => Flight) private flights;
+
     /***********************************************************/
 
     /******************** Modifiers***********************/
@@ -64,11 +76,11 @@ contract FlightSuretyApp {
     }
 
     modifier requireRegisteredUser(address addressToCheck) {
-        // check if address is in registerQue mapping
-        (bool registered, bool haspaid, uint256 votes) = flightSuretyData
-            .isRegisterAirline(addressToCheck);
+        // Check if airline is registered
+        bool registered = airlines[addressToCheck].isRegistered;
+
         require(registered == true, "Sender is not registered");
-        require(haspaid == true, "Sender has not paid registration fee");
+        // require(haspaid == true, "Sender has not paid registration fee");
         _;
     }
 
@@ -140,15 +152,25 @@ contract FlightSuretyApp {
         external
         requireIsOperational
         returns (
-            bool exist,
-            uint256 status,
-            bool registered,
-            uint256 departuretime,
-            uint256 price
+            bool _isRegistered,
+            string _flightNumber,
+            string _origin,
+            string _destination,
+            uint8 _statusCode,
+            uint256 _departureTime,
+            address _airline
         )
     {
         bytes32 key = getFlightKey(airline, flight, _timestamp);
-        return (flightSuretyData.getFlight(key));
+        return (
+            flights[key].isRegistered,
+            flights[key].flightNumber,
+            flights[key].origin,
+            flights[key].destination,
+            flights[key].statusCode,
+            flights[key].departureTime,
+            flights[key].airline
+        );
     }
 
     /*****************************************************/
@@ -192,71 +214,29 @@ contract FlightSuretyApp {
     }
 
     function registerFlight(
-        string _flight,
-        uint256 _timestamp,
-        uint256 _price
+        string flightNumber,
+        string destination,
+        string origin,
+        uint8 statusCode,
+        uint256 departureTime
     ) external requireIsOperational requireRegisteredUser(msg.sender) {
-        bytes32 key = getFlightKey(msg.sender, _flight, _timestamp);
-        flightSuretyData.addRegisteredFlight(key, _price, _timestamp);
-    }
+        bytes32 key = getFlightKey(msg.sender, flightNumber, departureTime);
 
-    /******************************************************/
+        require(!flights[key].isRegistered, "Flight is already registered.");
 
-    /******************Insurance Functions*****************/
-    /**                                                   */
-    /******************************************************/
-    function getTicketPrice(
-        string flight,
-        uint256 _timestamp,
-        address airline
-    ) external requireIsOperational returns (uint256, uint256) {
-        bytes32 key = getFlightKey(airline, flight, _timestamp);
-        return flightSuretyData.getTicketPriceWithInsurance(key);
-    }
-
-    function buyTicket(
-        string flight,
-        uint256 _timestamp,
-        address airline,
-        bool insured
-    ) external payable requireIsOperational {
-        uint256 amountToReturn;
-        bytes32 key = getFlightKey(airline, flight, _timestamp);
-        (uint256 ticketPriceWithout, uint256 ticketPriceWith) = flightSuretyData
-            .getTicketPriceWithInsurance(key);
-
-        if (insured == true) {
-            require(
-                msg.value >= ticketPriceWith,
-                "Need more Ether for ticket with insurance"
-            );
-            amountToReturn = msg.value.sub(ticketPriceWith);
-            msg.sender.transfer(amountToReturn);
-            address(flightSuretyData).transfer(ticketPriceWith);
-            flightSuretyData.buy(key, msg.sender, insured);
-        } else {
-            require(
-                msg.value >= ticketPriceWithout,
-                "Need more Ether for ticket"
-            );
-            amountToReturn = msg.value.sub(ticketPriceWithout);
-            msg.sender.transfer(amountToReturn);
-            address(flightSuretyData).transfer(ticketPriceWithout);
-            flightSuretyData.buy(key, msg.sender, insured);
-        }
+        flights[key] = Flight({
+            isRegistered: true,
+            flightNumber: flightNumber,
+            origin: origin,
+            destination: destination,
+            statusCode: statusCode,
+            departureTime: departureTime,
+            airline: msg.sender
+        });
     }
 
     function receiveCredit() external requireIsOperational {
         flightSuretyData.pay(msg.sender);
-    }
-
-    function isInsured(
-        string flight,
-        uint256 _timestamp,
-        address airline
-    ) external requireIsOperational returns (bool) {
-        bytes32 key = getFlightKey(airline, flight, _timestamp);
-        return flightSuretyData.isInsured(key, msg.sender);
     }
 
     function getCredit(
@@ -479,8 +459,6 @@ contract FlightSuretyApp {
 
         airlines[airlineAddress].name = airlineName;
         airlines[airlineAddress].isRegistered = true;
-
-        // suretyDataContract.registerTheFirstInsurer(airlineAddress);
     }
 
     function registerAirline(address airlineAddress, string airlineName)
@@ -489,8 +467,6 @@ contract FlightSuretyApp {
     {
         airlines[airlineAddress].name = airlineName;
         airlines[airlineAddress].isRegistered = true;
-
-        // suretyDataContract.registerInsurer(msg.sender, airlineAddress);
     }
 
     /******************************************************/

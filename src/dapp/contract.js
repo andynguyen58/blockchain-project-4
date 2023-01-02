@@ -31,7 +31,114 @@ export default class Contract {
 
     this.firstAirlineAddress = config.firstAirlineAddress;
     this.passengerAddress = null;
-    this.flights = config.flights;
+
+    this.flights = [
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02689",
+        departureTime: 1672695092,
+        origin: "MXP",
+        destination: "IBZ",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "U202288",
+        departureTime: Math.floor(new Date("02 Aug 2021 16:15:00") / 1000),
+        origin: "MXP",
+        destination: "LTN",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02835",
+        departureTime: Math.floor(new Date("02 Aug 2021 19:40:00") / 1000),
+        origin: "MXP",
+        destination: "BRI",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02689",
+        departureTime: Math.floor(new Date("03 Aug 2021 15:00:00") / 1000),
+        origin: "MXP",
+        destination: "IBZ",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "U202288",
+        departureTime: Math.floor(new Date("03 Aug 2021 16:15:00") / 1000),
+        origin: "MXP",
+        destination: "LTN",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02835",
+        departureTime: Math.floor(new Date("03 Aug 2021 19:40:00") / 1000),
+        origin: "MXP",
+        destination: "BRI",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02689",
+        departureTime: Math.floor(new Date("04 Aug 2021 15:00:00") / 1000),
+        origin: "MXP",
+        destination: "IBZ",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "U202288",
+        departureTime: Math.floor(new Date("04 Aug 2021 16:15:00") / 1000),
+        origin: "MXP",
+        destination: "LTN",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02835",
+        departureTime: Math.floor(new Date("04 Aug 2021 19:40:00") / 1000),
+        origin: "MXP",
+        destination: "BRI",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02689",
+        departureTime: Math.floor(new Date("05 Aug 2021 15:00:00") / 1000),
+        origin: "MXP",
+        destination: "IBZ",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "U202288",
+        departureTime: Math.floor(new Date("05 Aug 2021 16:15:00") / 1000),
+        origin: "MXP",
+        destination: "LTN",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02835",
+        departureTime: Math.floor(new Date("05 Aug 2021 19:40:00") / 1000),
+        origin: "MXP",
+        destination: "BRI",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02689",
+        departureTime: Math.floor(new Date("06 Aug 2021 15:00:00") / 1000),
+        origin: "MXP",
+        destination: "IBZ",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "U202288",
+        departureTime: Math.floor(new Date("06 Aug 2021 16:15:00") / 1000),
+        origin: "MXP",
+        destination: "LTN",
+      },
+      {
+        airlineAddress: config.firstAirlineAddress,
+        flightNumber: "EC02835",
+        departureTime: Math.floor(new Date("06 Aug 2021 19:40:00") / 1000),
+        origin: "MXP",
+        destination: "BRI",
+      },
+    ];
 
     this.owner = null;
     this.airlines = [];
@@ -80,7 +187,7 @@ export default class Contract {
       method: "eth_requestAccounts",
     });
 
-    this.activeAddress = activeAccounts[0];
+    self.activeAddress = activeAccounts[0];
 
     if (activeAccounts[0].toLowerCase() === self.owner.toLowerCase()) {
       self.userType = USER_TYPES.OWNER;
@@ -139,6 +246,14 @@ export default class Contract {
       .call({ from: this.passengerAddress }, callback);
   }
 
+  async getActiveAddress() {
+    const activeAccounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    return activeAccounts[0];
+  }
+
   getUserBalance(callback) {
     let self = this;
     let balance = this.web3.eth.getBalance(
@@ -158,49 +273,29 @@ export default class Contract {
     );
   }
 
-  buyFlightInsurance(flightIdx, callback) {
+  buyFlightInsurance(flight, passengerAddress, callback) {
     let self = this;
-    console.log({ self });
-    let flight = self.flights[parseInt(flightIdx)];
+    let payload = {
+      airline: flight.airlineAddress,
+      flight: flight.flightNumber,
+      timestamp: flight.departureTime,
+    };
 
     self.appContract.methods
-      .getCredit(
-        flight.flightNumber,
-        flight.departureTime,
-        flight.airlineAddress
-      )
-      .send({ from: self.passengers[0] }, (error, result) => {
-        if (error) {
-          console.error(error);
-        }
-        callback(error, flight);
+      .getCredit(payload.flight, payload.timestamp, payload.airline)
+      .send({ from: passengerAddress }, (error, result) => {
+        callback(error, result);
       });
   }
 
-  requestFlightStatusInfo(flightIdx, callback) {
+  requestFlightStatusInfo(address, callback) {
     let self = this;
 
-    let flight = self.flights[parseInt(flightIdx)];
-
-    self.appContract.methods
-      .fetchFlightStatus(
-        flight.airlineAddress,
-        flight.flightNumber,
-        flight.departureTime
-      )
-      .send({ from: self.passengerAddress }, (error, result) => {
-        callback(error, flight);
-      });
-  }
-
-  requestThisActiveFlightStatusInfo(callback) {
-    let self = this;
-
-    let flight = self.flights.find((flight) => {
-      return (
-        flight.airlineAddress.toLowerCase() === self.activeAddress.toLowerCase()
-      );
+    let flight = this.flights.find((flight) => {
+      return flight.airlineAddress?.toLowerCase() === address?.toLowerCase();
     });
+
+    if (!flight) return;
 
     self.appContract.methods
       .getFlightStatus(
@@ -213,33 +308,81 @@ export default class Contract {
       });
   }
 
-  withdrawFlightInsuranceCredit(flightIdx, callback) {
+  requestThisActiveFlightStatusInfo(address, callback) {
     let self = this;
 
-    let flight = self.flights[parseInt(flightIdx)];
+    let flight = this.flights.find((flight) => {
+      return flight.airlineAddress?.toLowerCase() === address?.toLowerCase();
+    });
 
-    console.log(
-      `Withdraw flight insurance credit for flight = <${self.getFlightDescriptionByIdx(
-        parseInt(flightIdx)
-      )}> from address=${self.passengerAddress}`
-    );
+    if (!flight) return;
 
     self.appContract.methods
-      .withdrawFlightInsuranceCredit(
-        flight.airlineAddress,
+      .getFlightStatus(
         flight.flightNumber,
-        flight.departureTime
+        flight.departureTime,
+        flight.airlineAddress
       )
-      .send({ from: self.passengerAddress }, (error, result) => {
-        if (error) {
-          console.error(error);
-        }
-        callback(error, flight);
+      .call((error, result) => {
+        callback(error, result);
+      });
+  }
+
+  withdrawFlightInsuranceCredit(_flight, address, callback) {
+    let self = this;
+
+    let payload = {
+      airline: _flight.airlineAddress,
+      flight: _flight.flightNumber,
+      timestamp: _flight.departureTime,
+    };
+
+    self.appContract.methods
+      .getCredit(payload.flight, payload.timestamp, payload.airline)
+      .send({ from: address }, (error, result) => {
+        callback(error, result);
       });
   }
 
   subscribeToFlightStatusInfoUpdatedEvent(callback) {
     console.log("Subscribe to FlightStatusInfoUpdatedEvent ...");
     this.appContract.events.OracleRequest(callback);
+  }
+
+  async registerFlight(
+    flightNumber,
+    destination,
+    origin,
+    statusCode,
+    departureTime,
+    callback
+  ) {
+    let self = this;
+    let payload = {
+      flightNumber,
+      destination,
+      origin,
+      statusCode,
+      departureTime,
+    };
+    await this.web3.eth.getAccounts((error, accts) => {
+      self.accounts = accts;
+    });
+
+    console.log({ add: self.activeAddress });
+    self.appContract.methods
+      .registerFlight(
+        payload.flightNumber,
+        payload.destination,
+        payload.origin,
+        payload.statusCode,
+        payload.departureTime
+      )
+      .send(
+        { from: self.activeAddress, gas: 5000000, gasPrice: 20000000 },
+        (error, result) => {
+          callback(error, payload);
+        }
+      );
   }
 }

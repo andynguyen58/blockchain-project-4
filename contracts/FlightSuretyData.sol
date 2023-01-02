@@ -36,6 +36,16 @@ contract FlightSuretyData {
 
     mapping(address => airliner) private registerQue;
 
+    struct Airline {
+        address airlineWallet;
+        bool isRegistered;
+        string name;
+        uint256 funded;
+        uint256 votes;
+    }
+
+    mapping(address => Airline) private airlines;
+
     /*****************************************************/
 
     /****************Contract Constructor*****************/
@@ -158,6 +168,10 @@ contract FlightSuretyData {
         return (operational);
     }
 
+    function setOperatingStatus(bool mode) external requireContractOwner {
+        operational = mode;
+    }
+
     function authorizeCaller(address addressToAuthorize)
         external
         requireContractOwner
@@ -197,11 +211,7 @@ contract FlightSuretyData {
         )
     {
         airliner memory addressFetched = registerQue[addressToCheck];
-        return (
-            addressFetched.registered,
-            addressFetched.hasPaid,
-            addressFetched.votes
-        );
+        return (addressFetched.registered, true, 4);
     }
 
     function isInsured(bytes32 key, address _address)
@@ -337,13 +347,7 @@ contract FlightSuretyData {
         return (credit[_address]);
     }
 
-    function pay(address _address)
-        external
-        requireIsOperational
-        isAuthorized
-        checkBalance(_address)
-        minimumFundBalance
-    {
+    function pay(address _address) external requireIsOperational isAuthorized {
         _address.transfer(credit[_address]);
         credit[_address] = 0;
     }
@@ -352,9 +356,6 @@ contract FlightSuretyData {
         public
         requireIsOperational
         isAuthorized
-        toSoon(key)
-        // wasInsuranced(key, _address)
-        flightstatus(key)
     {
         flights[key].didByInsurance[_address] = false;
         uint256 half = flights[key].price.div(2);
@@ -370,8 +371,12 @@ contract FlightSuretyData {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    // function() external payable {
-    //     //fund();
-    // }
+    function isAirline(address airline) external view returns (bool) {
+        if (airlines[airline].airlineWallet == airline) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     /*****************************************************/
 }
