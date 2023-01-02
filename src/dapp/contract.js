@@ -76,7 +76,7 @@ export default class Contract {
       callback();
     });
 
-    const activeAccounts = await ethereum.request({
+    const activeAccounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
 
@@ -136,7 +136,7 @@ export default class Contract {
   submitToOracle(index, airline, flight, timestamp, statusCode, callback) {
     this.appContract.methods
       .submitOracleResponse(index, airline, flight, timestamp, statusCode)
-      .call({ from: self.passengerAddress }, callback);
+      .call({ from: this.passengerAddress }, callback);
   }
 
   getUserBalance(callback) {

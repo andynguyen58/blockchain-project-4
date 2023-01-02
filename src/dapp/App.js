@@ -1,89 +1,78 @@
-import DOM from "./dom";
+import "./App.css";
+import { useState, useEffect } from "react";
 import Contract from "./contract";
-import "./flightsurety.css";
-import moment from "moment";
-import CONSTANTS from "./constants";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
 
-const App = function _App() {
-  return `
-  <div class="top-20" id="display-wrapper"></div>
+const App = () => {
+  const [flights, setFlights] = useState([]);
+  const [operationStatus, setOperationStatus] = useState(false);
+  const [userType, setUserType] = useState("");
+  const [address, setAddress] = useState("");
 
-  <h2>
-    User type:
-    <h5 id="user-type">${_App.state.userType}</h5>
-  </h2>
+  useEffect(() => {
+    let contract = new Contract("localhost", () => {
+      contract.isContractOperational((error, result) => {
+        if (error) {
+          console.log({ error });
+          throw error;
+        }
 
-  <h2>
-    Balance:
-    <h5 id="balance">${_App.state.balance}</h5>
-  </h2>
+        setOperationStatus(result);
+      });
+      contract.subscribeToFlightStatusInfoUpdatedEvent((error, event) => {
+        if (error) {
+          throw error;
+        }
+        let result = event.returnValues;
+        console.log({ result });
+      });
+    });
+  });
 
-  <h2>
-    Address:
-    <h5 id="address">${_App.state.address}</h5>
-  </h2>
+  return (
+    <div className="App">
+      <div className="main-container">
+        <Card style={styles.cardContainer}>
+          <Card.Body>
+            <Card.Title style={styles.title}>Operation status:</Card.Title>
+            <Card.Text style={styles.statusActive}>
+              {operationStatus.toString().toUpperCase()}
+            </Card.Text>
+          </Card.Body>
+        </Card>
 
-  <h2>
-    Log:
-    <h5 id="log">${_App.state.log}</h5>
-  </h2>
+        <Card style={styles.cardContainer}>
+          <Card.Body>
+            <Card.Title style={styles.title}>Address:</Card.Title>
+            <Card.Text>{address}</Card.Text>
+          </Card.Body>
+        </Card>
 
-  <h2>
-    Flight information:
-    <h5 id="flight-information"></h5>
-  </h2>
-
-  <table id="flights-information"></table>
-    `;
+        <Card style={styles.cardContainer}>
+          <Card.Body>
+            <Card.Title style={styles.title}>Log:</Card.Title>
+            <Card.Text style={styles.statusActive}>
+              {operationStatus.toString().toUpperCase()}
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
-App.state = {
-  count: 0,
-  increment: () => {
-    setState(() => App.state.count++);
+const styles = {
+  statusActive: {
+    color: "green",
   },
-  userType: "UNKNOWN",
-  balance: "0",
-  address: "",
-  log: "",
+  cardContainer: {
+    marginBottom: 20,
+  },
+  title: {
+    fontWeight: "bold",
+  },
 };
 
-const setState = (callback) => {
-  callback();
-  updateTree(); // extracted function
-};
-
-// let contract = new Contract("localhost", () => {
-//   contract.isContractOperational((error, result) => {
-//     if (error) {
-//       console.log({ error });
-//       throw error;
-//     }
-//     showResults("Operational Status", [
-//       {
-//         label: "Operational Status",
-//         error: error,
-//         value: result,
-//       },
-//     ]);
-//     DOM.elid("user-type").innerHTML = contract.userType;
-//     DOM.elid("address").innerHTML = contract.activeAddress;
-//     contract.getUserBalance((error, result) => {
-//       DOM.elid("balance").innerHTML = `${result} ETH`;
-//     });
-//     renderFlightInformation(contract);
-//   });
-//   contract.subscribeToFlightStatusInfoUpdatedEvent((error, event) => {
-//     if (error) {
-//       throw error;
-//     }
-//     let result = event.returnValues;
-//     console.log({ result });
-//   });
-// });
-
-const updateTree = () => {
-  document.getElementById("app").innerHTML = App();
-};
-
-updateTree();
+export default App;
