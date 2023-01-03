@@ -58,11 +58,6 @@ contract FlightSuretyApp {
 
     mapping(bytes32 => Flight) private flights;
 
-    /***********************************************************/
-
-    /******************** Modifiers***********************/
-    /**                                                  */
-    /*****************************************************/
     modifier requireIsOperational() {
         // Modify to call data contract's status
         bool status = flightSuretyData.isOperational();
@@ -80,64 +75,11 @@ contract FlightSuretyApp {
         bool registered = airlines[addressToCheck].isRegistered;
 
         require(registered == true, "Sender is not registered");
-        // require(haspaid == true, "Sender has not paid registration fee");
         _;
     }
 
-    // Define a modifier that checks if the paid amount is sufficient to cover the price
-    modifier paidEnough(uint256 _price) {
-        require(msg.value >= _price, "Pay Some more");
-        _;
-    }
-
-    // Define a modifier that checks the price and refunds the remaining balance
-    modifier checkValue(uint256 _price, address addressToFund) {
-        uint256 amountToReturn = msg.value - _price;
-        addressToFund.transfer(amountToReturn);
-        _;
-    }
-
-    modifier checkVoter(address _address, address _promoter) {
-        bool hasVoted = flightSuretyData.hasAlreadyVoted(_address, _promoter);
-        require(hasVoted == false, "Voters has already promoted address");
-        _;
-    }
-
-    /*****************************************************/
-
-    /*********************Tool functions******************/
-    /**                                                  */
-    /*****************************************************/
     function isOperational() external returns (bool) {
         return flightSuretyData.isOperational();
-    }
-
-    function getRegistrationCount()
-        external
-        requireIsOperational
-        returns (uint256)
-    {
-        return flightSuretyData.getRegistrationCount();
-    }
-
-    function getCurrentConsieses()
-        external
-        requireIsOperational
-        returns (uint256)
-    {
-        return flightSuretyData.getCurrentConsieses();
-    }
-
-    function isRegisterAirline(address addressToCheck)
-        external
-        requireIsOperational
-        returns (
-            bool registered,
-            bool hasPaid,
-            uint256 votes
-        )
-    {
-        return flightSuretyData.isRegisterAirline(addressToCheck);
     }
 
     function contractTime() external view returns (uint256) {
@@ -171,46 +113,6 @@ contract FlightSuretyApp {
             flights[key].departureTime,
             flights[key].airline
         );
-    }
-
-    /*****************************************************/
-
-    /******************Airline Functions*******************/
-    /**                                                   */
-    /******************************************************/
-
-    function promoteAddressFromRegistration(address addressToPromote)
-        external
-        requireIsOperational
-        checkVoter(addressToPromote, msg.sender)
-        requireRegisteredUser(msg.sender)
-    {
-        if (flightSuretyData.getRegistrationCount() <= 4) {
-            flightSuretyData.changeRegisteration(addressToPromote, true);
-        } else {
-            flightSuretyData.addVote(addressToPromote, msg.sender);
-            uint256 consieses = flightSuretyData.getCurrentConsieses();
-            (bool registered, bool haspaid, uint256 votes) = flightSuretyData
-                .isRegisterAirline(addressToPromote);
-            if (consieses <= votes && registered == false) {
-                flightSuretyData.changeRegisteration(addressToPromote, true);
-            }
-        }
-    }
-
-    function payRegistrationFee()
-        external
-        payable
-        requireIsOperational
-        paidEnough(AirlineRegistrationFee)
-        checkValue(AirlineRegistrationFee, msg.sender)
-    {
-        require(
-            flightSuretyData.hasPaid(msg.sender) == false,
-            "Sender has already paid airline fee"
-        );
-        address(flightSuretyData).transfer(msg.value);
-        flightSuretyData.payFee(msg.sender);
     }
 
     function registerFlight(
@@ -248,16 +150,6 @@ contract FlightSuretyApp {
         flightSuretyData.fund(key, msg.sender);
     }
 
-    function creditAmount() external requireIsOperational returns (uint256) {
-        return (flightSuretyData.creditInsurees(msg.sender));
-    }
-
-    /******************************************************/
-
-    /********************Oracle Functions******************/
-    /**                                                   */
-    /******************************************************/
-
     function processFlightStatus(
         address airline,
         string memory flight,
@@ -287,13 +179,10 @@ contract FlightSuretyApp {
         emit OracleRequest(index, airline, flight, timestamp);
     }
 
-    // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;
 
-    // Fee to be paid when registering oracle
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
-    // Number of oracles that must respond for valid status
     uint256 private constant MIN_RESPONSES = 3;
 
     struct Oracle {
@@ -428,11 +317,9 @@ contract FlightSuretyApp {
         return indexes;
     }
 
-    // Returns array of three non-duplicating integers from 0-9
     function getRandomIndex(address account) internal returns (uint8) {
         uint8 maxValue = 10;
 
-        // Pseudo random number...the incrementing nonce adds variation
         uint8 random = uint8(
             uint256(
                 keccak256(
@@ -442,7 +329,7 @@ contract FlightSuretyApp {
         );
 
         if (nonce > 250) {
-            nonce = 0; // Can only fetch blockhashes for last 256 blocks so we adapt
+            nonce = 0;
         }
 
         return random;

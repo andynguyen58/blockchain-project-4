@@ -34,8 +34,6 @@ contract FlightSuretyData {
     mapping(address => bool) private authorizeCallers;
     mapping(bytes32 => clientFlights) private flights;
 
-    mapping(address => airliner) private registerQue;
-
     struct Airline {
         address airlineWallet;
         bool isRegistered;
@@ -46,26 +44,16 @@ contract FlightSuretyData {
 
     mapping(address => Airline) private airlines;
 
-    /*****************************************************/
-
-    /****************Contract Constructor*****************/
-    /**                                                  */
-    /*****************************************************/
+    /********************************************************************************************/
+    /*                                       DATA VARIABLES                                     */
+    /********************************************************************************************/
     constructor() public {
         contractOwner = msg.sender;
-        airliner memory NewAirline;
-        NewAirline.registered = true;
-        NewAirline.hasPaid = true;
-        NewAirline.votes = 0;
-        registerQue[msg.sender] = NewAirline;
-        registeredCount = registeredCount.add(1);
     }
 
-    /*****************************************************/
-
-    /**************Contract Modifiers*********************/
-    /**                                                  */
-    /*****************************************************/
+    /********************************************************************************************/
+    /*                                       FUNCTION MODIFIERS                                 */
+    /********************************************************************************************/
     modifier isAuthorized() {
         require(
             authorizeCallers[msg.sender] == true,
@@ -84,22 +72,6 @@ contract FlightSuretyData {
         _;
     }
 
-    modifier wasInsuranced(bytes32 key, address _address) {
-        require(
-            flights[key].didByInsurance[_address] == true,
-            "Address is not insuranced or was  already refunded for this flight"
-        );
-        _;
-    }
-
-    modifier isNotInsuranced(bytes32 key, address _address) {
-        require(
-            flights[key].didByInsurance[_address] == false,
-            "Address already has insurance for this flight"
-        );
-        _;
-    }
-
     modifier flightExists(bytes32 key) {
         require(flights[key].exist == true, "Flight Doesn't exist");
         _;
@@ -109,14 +81,6 @@ contract FlightSuretyData {
         require(
             flights[key].status != 10,
             "Flight was on time no insurance for you"
-        );
-        _;
-    }
-
-    modifier timesUp(bytes32 key) {
-        require(
-            flights[key].departuretime >= now,
-            "Too late to buy insurance for this flight"
         );
         _;
     }
@@ -141,21 +105,6 @@ contract FlightSuretyData {
         _;
     }
 
-    /*****************************************************/
-
-    /****************Contract Functions*******************/
-    /**                                                  */
-    /*****************************************************/
-    function hasPaid(address _address)
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (bool)
-    {
-        return (registerQue[_address].hasPaid);
-    }
-
     function changeOperation() external requireContractOwner {
         if (operational == true) {
             operational = false;
@@ -177,63 +126,6 @@ contract FlightSuretyData {
         requireContractOwner
     {
         authorizeCallers[addressToAuthorize] = true;
-    }
-
-    function hasAlreadyVoted(address addressToPromote, address promoter)
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (bool)
-    {
-        return (registerQue[addressToPromote].voters[promoter]);
-    }
-
-    function getRegistrationCount()
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (uint256)
-    {
-        return (registeredCount);
-    }
-
-    function isRegisterAirline(address addressToCheck)
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (
-            bool registered,
-            bool paid,
-            uint256 votes
-        )
-    {
-        airliner memory addressFetched = registerQue[addressToCheck];
-        return (addressFetched.registered, true, 4);
-    }
-
-    function isInsured(bytes32 key, address _address)
-        external
-        view
-        returns (bool)
-    {
-        return (flights[key].didByInsurance[_address]);
-    }
-
-    function getTicketPriceWithInsurance(bytes32 key)
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        flightExists(key)
-        returns (uint256 ticketPrice, uint256 ticketPriceWithInsurance)
-    {
-        uint256 priceWithInsurance = flights[key].price.add(
-            AirlineRegistrationFee
-        );
-        return (flights[key].price, priceWithInsurance);
     }
 
     function getFlight(bytes32 key)
@@ -266,85 +158,14 @@ contract FlightSuretyData {
         flights[key].status = status;
     }
 
-    function getCurrentConsieses()
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (uint256)
-    {
-        uint256 consieses = registeredCount.div(2);
-        return (consieses);
-    }
-
-    function changeRegisteration(
-        address addressToRegister,
-        bool registrationState
-    ) external requireIsOperational isAuthorized {
-        registerQue[addressToRegister].registered = registrationState;
-        registeredCount = registeredCount.add(1);
-    }
-
-    function addVote(address addressToPromote, address promoter)
-        external
-        requireIsOperational
-        isAuthorized
-    {
-        registerQue[addressToPromote].voters[promoter] = true;
-        registerQue[addressToPromote].votes = registerQue[addressToPromote]
-            .votes
-            .add(1);
-    }
-
-    function payFee(address addressThatPaid)
-        external
-        payable
-        requireIsOperational
-        isAuthorized
-    {
-        registerQue[addressThatPaid].hasPaid = true;
-    }
-
-    function addRegisteredFlight(
-        bytes32 key,
-        uint256 price,
-        uint256 time
-    ) external requireIsOperational isAuthorized {
-        clientFlights memory registeredFlight;
-        registeredFlight.exist = true;
-        registeredFlight.status = 10;
-        registeredFlight.registered = true;
-        registeredFlight.price = price;
-        registeredFlight.departuretime = time;
-        flights[key] = registeredFlight;
-    }
-
     function buy(
         bytes32 key,
         address buyer,
         bool withInsurance
-    )
-        external
-        payable
-        requireIsOperational
-        isAuthorized
-        isNotInsuranced(key, buyer)
-        flightExists(key)
-        timesUp(key)
-    {
+    ) external payable requireIsOperational isAuthorized flightExists(key) {
         if (withInsurance == true) {
             flights[key].didByInsurance[buyer] = true;
         }
-    }
-
-    function creditInsurees(address _address)
-        external
-        view
-        requireIsOperational
-        isAuthorized
-        returns (uint256)
-    {
-        return (credit[_address]);
     }
 
     function pay(address _address) external requireIsOperational isAuthorized {

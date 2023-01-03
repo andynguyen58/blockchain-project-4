@@ -3,7 +3,6 @@ import FlightSuretyData from "../../build/contracts/FlightSuretyData.json";
 
 import Config from "./config.json";
 import Web3 from "web3";
-import moment from "moment";
 
 const USER_TYPES = {
   OWNER: "OWNER",
@@ -35,108 +34,73 @@ export default class Contract {
     this.flights = [
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02689",
+        flightNumber: "HVN1174",
         departureTime: 1672695092,
-        origin: "MXP",
-        destination: "IBZ",
+        origin: "SGN",
+        destination: "HPH",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "U202288",
-        departureTime: Math.floor(new Date("02 Aug 2021 16:15:00") / 1000),
-        origin: "MXP",
-        destination: "LTN",
+        flightNumber: "HVN1185",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "HPH",
+        destination: "SGN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02835",
-        departureTime: Math.floor(new Date("02 Aug 2021 19:40:00") / 1000),
-        origin: "MXP",
-        destination: "BRI",
+        flightNumber: "HVN1202",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "VCA",
+        destination: "HAN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02689",
-        departureTime: Math.floor(new Date("03 Aug 2021 15:00:00") / 1000),
-        origin: "MXP",
-        destination: "IBZ",
+        flightNumber: "HVN1265",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "VII",
+        destination: "SGN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "U202288",
-        departureTime: Math.floor(new Date("03 Aug 2021 16:15:00") / 1000),
-        origin: "MXP",
-        destination: "LTN",
+        flightNumber: "HVN1268",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "SGN",
+        destination: "VII",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02835",
-        departureTime: Math.floor(new Date("03 Aug 2021 19:40:00") / 1000),
-        origin: "MXP",
-        destination: "BRI",
+        flightNumber: "HVN1277",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "HPH",
+        destination: "SGN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02689",
-        departureTime: Math.floor(new Date("04 Aug 2021 15:00:00") / 1000),
-        origin: "MXP",
-        destination: "IBZ",
+        flightNumber: "HVN1202",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "VCA",
+        destination: "HAN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "U202288",
-        departureTime: Math.floor(new Date("04 Aug 2021 16:15:00") / 1000),
-        origin: "MXP",
-        destination: "LTN",
+        flightNumber: "HVN1265",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "VII",
+        destination: "SGN",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02835",
-        departureTime: Math.floor(new Date("04 Aug 2021 19:40:00") / 1000),
-        origin: "MXP",
-        destination: "BRI",
+        flightNumber: "HVN1268",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "SGN",
+        destination: "VII",
       },
       {
         airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02689",
-        departureTime: Math.floor(new Date("05 Aug 2021 15:00:00") / 1000),
-        origin: "MXP",
-        destination: "IBZ",
-      },
-      {
-        airlineAddress: config.firstAirlineAddress,
-        flightNumber: "U202288",
-        departureTime: Math.floor(new Date("05 Aug 2021 16:15:00") / 1000),
-        origin: "MXP",
-        destination: "LTN",
-      },
-      {
-        airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02835",
-        departureTime: Math.floor(new Date("05 Aug 2021 19:40:00") / 1000),
-        origin: "MXP",
-        destination: "BRI",
-      },
-      {
-        airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02689",
-        departureTime: Math.floor(new Date("06 Aug 2021 15:00:00") / 1000),
-        origin: "MXP",
-        destination: "IBZ",
-      },
-      {
-        airlineAddress: config.firstAirlineAddress,
-        flightNumber: "U202288",
-        departureTime: Math.floor(new Date("06 Aug 2021 16:15:00") / 1000),
-        origin: "MXP",
-        destination: "LTN",
-      },
-      {
-        airlineAddress: config.firstAirlineAddress,
-        flightNumber: "EC02835",
-        departureTime: Math.floor(new Date("06 Aug 2021 19:40:00") / 1000),
-        origin: "MXP",
-        destination: "BRI",
+        flightNumber: "HVN1277",
+        departureTime: Math.floor(new Date("03 Jan 2023 15:53:00") / 1000),
+        origin: "HPH",
+        destination: "SGN",
       },
     ];
 
@@ -146,12 +110,12 @@ export default class Contract {
     this.ONE_ETHER = this.web3.utils.toWei("1", "ether");
 
     this.hFlightStatusCodeDescription = {
-      0: "STATUS_CODE_UNKNOWN (0) => Sorry! Credit withdraw NOT authorized!",
-      10: "STATUS_CODE_ON_TIME (10) => Sorry! Credit withdraw NOT authorized!",
-      20: "STATUS_CODE_LATE_AIRLINE (20) => YEAH! Credit withdraw authorized!",
-      30: "STATUS_CODE_LATE_WEATHER (30) => Sorry! Credit withdraw NOT authorized!",
-      40: "STATUS_CODE_LATE_TECHNICAL (40) => Sorry! Credit withdraw NOT authorized!",
-      50: "STATUS_CODE_LATE_OTHER (50) => Sorry! Credit withdraw NOT authorize!",
+      0: "STATUS_CODE_UNKNOWN",
+      10: "STATUS_CODE_ON_TIME",
+      20: "STATUS_CODE_LATE_AIRLINE",
+      30: "STATUS_CODE_LATE_WEATHER",
+      40: "STATUS_CODE_LATE_TECHNICAL",
+      50: "STATUS_CODE_LATE_OTHER (50)",
     };
 
     this.userType = null;
@@ -208,10 +172,7 @@ export default class Contract {
   }
 
   getFlightStatusInfo(flightNumber, flightDepartureTime, status) {
-    console.log(
-      `Flight <${flightDepartureTime} | ${flightNumber}> has ${this.hFlightStatusCodeDescription[status]}`
-    );
-    return `Flight <${flightDepartureTime} | ${flightNumber}> has ${this.hFlightStatusCodeDescription[status]}`;
+    return `${flightNumber} ${flightDepartureTime} ${this.hFlightStatusCodeDescription[status]}`;
   }
 
   getFlightDescriptionByAddress() {
@@ -222,28 +183,6 @@ export default class Contract {
         flight.airlineAddress.toLowerCase() === self.activeAddress.toLowerCase()
       );
     });
-  }
-
-  getFlightDescriptionByIdx(flightIdx) {
-    if (
-      !Number.isInteger(flightIdx) ||
-      flightIdx < 0 ||
-      flightIdx > this.flights.length - 1
-    ) {
-      throw new Error("Invalid flight requested");
-    }
-
-    let flight = this.flights[flightIdx];
-    let flightDepartureTime = moment(flight.departureTime * 1000).format(
-      "Do MMM HH:mm"
-    );
-    return `${flightDepartureTime} | ${flight.origin} -> ${flight.destination} | ${flight.flightNumber}`;
-  }
-
-  submitToOracle(index, airline, flight, timestamp, statusCode, callback) {
-    this.appContract.methods
-      .submitOracleResponse(index, airline, flight, timestamp, statusCode)
-      .call({ from: this.passengerAddress }, callback);
   }
 
   async getActiveAddress() {
@@ -342,11 +281,6 @@ export default class Contract {
       .send({ from: address }, (error, result) => {
         callback(error, result);
       });
-  }
-
-  subscribeToFlightStatusInfoUpdatedEvent(callback) {
-    console.log("Subscribe to FlightStatusInfoUpdatedEvent ...");
-    this.appContract.events.OracleRequest(callback);
   }
 
   async registerFlight(

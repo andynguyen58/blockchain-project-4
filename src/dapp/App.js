@@ -8,8 +8,6 @@ import CONSTANTS from "./constants";
 import Table from "react-bootstrap/Table";
 import Dropdown from "react-bootstrap/Dropdown";
 
-import Toast from "react-bootstrap/Toast";
-
 const App = () => {
   const [operationStatus, setOperationStatus] = useState(false);
   const [address, setAddress] = useState("");
@@ -50,13 +48,6 @@ const App = () => {
 
       contract.getUserBalance((error, result) => {
         setBalance(`${result} ETH`);
-      });
-
-      contract.subscribeToFlightStatusInfoUpdatedEvent((error, event) => {
-        if (error) {
-          throw error;
-        }
-        let result = event.returnValues;
       });
 
       contract.requestThisActiveFlightStatusInfo(address, (error, result) => {
